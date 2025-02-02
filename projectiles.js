@@ -1,4 +1,4 @@
-import { ctx } from './environment.js';
+import { ctx } from './canvas.js';
 import { createExplosion } from './explosions.js';
 import { playSound } from './sounds.js';
 
@@ -71,7 +71,7 @@ export function drawMissiles() {
       missile.x + missile.width,
       missile.y + missile.height
     );
-    gradient.addColorStop(0, 'yellow');
+    gradient.addColorStop(0, 'white ');
     gradient.addColorStop(1, 'red');
     ctx.fillStyle = gradient;
 

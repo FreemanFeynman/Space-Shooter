@@ -1,9 +1,9 @@
 const sounds = {
   shoot: new Audio('./sounds/shoot.mp3'),
   explosion: new Audio('./sounds/explosion.mp3'),
-  item: new Audio('./sounds/item.mp3'),
+  //item: new Audio('./sounds/item.mp3'),
   background: new Audio('./sounds/background.mp3'),
-  //collision: new Audio('./collision/item.mp3'),
+  //collision: new Audio('./collision/item.mp3'), // because it's a bit of an annoying sound.
 };
 
 // Enable looping for background music

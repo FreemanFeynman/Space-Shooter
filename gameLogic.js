@@ -1,4 +1,4 @@
-import { ctx } from './environment.js';
+import { ctx } from './canvas.js';
 import { spacecraft } from './player.js';
 
 let score = 0;
@@ -13,9 +13,10 @@ export function updateGameLogic() {
 export function drawGameInfo() {
   ctx.fillStyle = 'Yellow';
   ctx.font = '20px Verdana';
-  ctx.fillText(`Score: ${Math.floor(score)}`, 20, 30);
-  ctx.fillText(`Shield: ${spacecraft.damage || 0}`, 20, 60); // Ensure damage is not undefined
+  ctx.fillText(`Score: ${Math.floor(score)}`, 70, 50);
+  ctx.fillText(`Shield: ${spacecraft.damage || 0}`, 70, 80);
 }
+
 
 export function isGameEnded() {
   return isGameOver;
