@@ -1,4 +1,4 @@
-import { ctx } from './environment.js';
+import { ctx } from './canvas.js';
 
 export let explosions = [];
 

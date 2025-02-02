@@ -1,5 +1,6 @@
-import { ctx } from './environment.js';
-import { obstacles } from './obstacles.js';
+import { ctx } from './canvas.js';
+import { enemies } from './enemies.js';
+import { spaceStations } from './spaceStations.js';
 import { updateScore } from './gameLogic.js';
 import { createExplosion } from './explosions.js';
 import { playSound } from './sounds.js';
@@ -13,12 +14,12 @@ export const spacecraft = {
   y: window.innerHeight - 150,
   width: 125,
   height: 125,
-  speed: 10, // Base speed
-  velocity: { x: 0, y: 0 }, // Velocity for smooth movement
-  acceleration: 1.0, // Acceleration for smooth start
-  friction: 0.95, // Friction for gradual stop
-  maxSpeed: 15, // Maximum speed
-  damage: 5, // Initialize damage
+  speed: 10,
+  velocity: { x: 0, y: 0 }, // mooth movement
+  acceleration: 1.0, // smooth start
+  friction: 0.95, // gradual stop
+  maxSpeed: 15,
+  damage: 10,
   draw() {
     if (spacecraftImage.complete) {
       ctx.drawImage(
@@ -110,34 +111,54 @@ export function fireBullet(spacecraft) {
   });
 }
 
-// Update player bullets
 export function updateBullets() {
   bullets.forEach((bullet) => {
     bullet.y -= bullet.speed;
 
-    obstacles.forEach((obstacle) => {
+    // Check for collisions with enemies
+    enemies.forEach((enemy) => {
       if (
-        bullet.x < obstacle.x + obstacle.width &&
-        bullet.x + bullet.width > obstacle.x &&
-        bullet.y < obstacle.y + obstacle.height &&
-        bullet.y + bullet.height > obstacle.y
+        bullet.x < enemy.x + enemy.width &&
+        bullet.x + bullet.width > enemy.x &&
+        bullet.y < enemy.y + enemy.height &&
+        bullet.y + bullet.height > enemy.y
       ) {
-        createExplosion(obstacle.x + obstacle.width / 2, obstacle.y + obstacle.height / 2);
-        playSound('explosion'); // Explosion sound
-        obstacle.destroyed = true;
+        // Create explosion and mark the enemy and bullet as destroyed
+        createExplosion(enemy.x + enemy.width / 2, enemy.y + enemy.height / 2);
+        playSound('explosion');
+        enemy.destroyed = true;
         bullet.destroyed = true;
 
-        // Update score based on obstacle type
-        if (obstacle.type === 'enemy') {
-          updateScore(10);
-        } else if (obstacle.type === 'spacestation') {
-          updateScore(0);
-        }
+        // Update score for destroying an enemy
+        updateScore(10);
+      }
+    });
+
+    // Check for collisions with space stations
+    spaceStations.forEach((spaceStation) => {
+      if (
+        bullet.x < spaceStation.x + spaceStation.width &&
+        bullet.x + bullet.width > spaceStation.x &&
+        bullet.y < spaceStation.y + spaceStation.height &&
+        bullet.y + bullet.height > spaceStation.y
+      ) {
+        //Create explosion and bullet destroyed
+        createExplosion(spaceStation.x + spaceStation.width / 2, spaceStation.y + spaceStation.height / 2);
+        playSound('explosion');
+        spaceStation.destroyed = true;
+        bullet.destroyed = true;
+
+        // Optionally, deduct points or take no action
+        updateScore(0);
       }
     });
   });
 
-  bullets = bullets.filter((bullet) => !bullet.destroyed);
+  // Remove destroyed bullets from the bullets array
+  bullets.splice(0, bullets.length, ...bullets.filter((bullet) => !bullet.destroyed));
+
+  // Remove destroyed enemies from the enemies array
+  enemies.splice(0, enemies.length, ...enemies.filter((enemy) => !enemy.destroyed));
 }
 
 // Draw bullets
@@ -151,7 +172,7 @@ export function drawBullets() {
       bullet.y + bullet.height
     );
     gradient.addColorStop(0, 'yellow');
-    gradient.addColorStop(1, 'orange');
+    gradient.addColorStop(1, 'red');
     ctx.fillStyle = gradient;
 
     // Draw the bullet

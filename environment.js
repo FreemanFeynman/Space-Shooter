@@ -1,10 +1,4 @@
-export const canvas = document.getElementById("gameCanvas");
-export const ctx = canvas.getContext("2d");
-
-export function setupCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
+import { ctx, canvas, setupCanvas } from './canvas.js';
 
 let stars = [];
 let backgroundSpeed = 2; // Initialize speed multiplier
@@ -30,7 +24,7 @@ export function updateStars() {
   });
 
   // Gradually increase the background speed
-  backgroundSpeed += 0.001; // Adjust increment for desired intensity
+  backgroundSpeed += 0.001;
 }
 
 function drawBackground() {
@@ -55,7 +49,7 @@ export function drawStars() {
   ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas before drawing
 
   stars.forEach((star) => {
-    ctx.fillStyle = "yellow";
+    ctx.fillStyle = "white";
     ctx.beginPath();
     ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
     ctx.fill();
