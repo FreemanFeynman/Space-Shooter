@@ -15,8 +15,8 @@ export function createSpaceStation() {
     id: Math.random().toString(36).substring(2),
     x: Math.random() * canvas.width,
     y: -50,
-    width: 50,
-    height: 50,
+    width: 70,
+    height: 70,
     velocity: Math.random() * 2 + 1,
     image: spacestationImages[Math.floor(Math.random() * spacestationImages.length)],
     destroyed: false

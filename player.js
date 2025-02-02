@@ -12,8 +12,8 @@ export let bullets = [];
 export const spacecraft = {
   x: window.innerWidth / 2,
   y: window.innerHeight - 150,
-  width: 125,
-  height: 125,
+  width: 65,
+  height: 65,
   speed: 10,
   velocity: { x: 0, y: 0 }, // mooth movement
   acceleration: 1.0, // smooth start
