@@ -1,7 +1,13 @@
 import { ctx, canvas, setupCanvas } from './canvas.js';
+import { playSound } from './sounds.js';
 
 let stars = [];
+let shootingStars = [];
 let backgroundSpeed = 2; // Initialize speed multiplier
+let startImage = new Image();
+startImage.src = './images/startscreen.png';
+
+const starColors = ['white', 'lightblue', 'yellow', 'lightpurple'];
 
 export function initializeStars() {
   // Populate stars array
@@ -10,6 +16,9 @@ export function initializeStars() {
     y: Math.random() * canvas.height,
     size: Math.random() * 2 + 1,
     speed: Math.random() * 0.5 + 0.5,
+    opacity: Math.random(),
+    color: starColors[Math.floor(Math.random() * starColors.length)],
+    twinkleSpeed: Math.random() * 0.02 + 0.01,
   }));
   console.log("Stars initialized:", stars);
 }
@@ -17,6 +26,10 @@ export function initializeStars() {
 export function updateStars() {
   stars.forEach((star) => {
     star.y += star.speed * backgroundSpeed; // Apply speed multiplier
+    star.opacity += star.twinkleSpeed; // Update opacity for twinkling effect
+    if (star.opacity > 1 || star.opacity < 0) {
+      star.twinkleSpeed *= -1; // Reverse twinkle direction
+    }
     if (star.y > canvas.height) {
       star.y = 0; // Reset star to the top
       star.x = Math.random() * canvas.width;
@@ -25,6 +38,31 @@ export function updateStars() {
 
   // Gradually increase the background speed
   backgroundSpeed += 0.001;
+
+  // Update shooting stars
+  updateShootingStars();
+}
+
+function updateShootingStars() {
+  shootingStars.forEach((star, index) => {
+    star.x += star.speedX;
+    star.y += star.speedY;
+    if (star.x > canvas.width || star.y > canvas.height) {
+      shootingStars.splice(index, 1); // Remove shooting star if it goes off-screen
+    }
+  });
+
+  // Randomly add new shooting stars
+  if (Math.random() < 0.01) {
+    shootingStars.push({
+      x: Math.random() * canvas.width,
+      y: 0,
+      speedX: Math.random() * 2 + 2,
+      speedY: Math.random() * 2 + 2,
+      length: Math.random() * 80 + 20,
+      opacity: Math.random() * 0.5 + 0.5,
+    });
+  }
 }
 
 function drawBackground() {
@@ -43,48 +81,40 @@ function drawBackground() {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
-let shootingStars = [];
-
 export function drawStars() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas before drawing
-
   stars.forEach((star) => {
-    ctx.fillStyle = "white";
+    ctx.globalAlpha = star.opacity; // Set opacity for twinkling effect
+    ctx.fillStyle = star.color;
     ctx.beginPath();
     ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
     ctx.fill();
   });
+  ctx.globalAlpha = 1; // Reset opacity
 
-  shootingStars.forEach((star, index) => {
-    ctx.strokeStyle = "purple";
+  // Draw shooting stars
+  shootingStars.forEach((star) => {
+    ctx.strokeStyle = 'white';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(star.x, star.y);
-    ctx.lineTo(star.x - star.trailX, star.y - star.trailY);
+    ctx.lineTo(star.x - star.length, star.y - star.length);
     ctx.stroke();
-
-    star.x += star.speedX;
-    star.y += star.speedY;
-    star.trailX *= 0.95; // Reduce trail length
-    star.trailY *= 0.95;
-
-    if (star.trailX < 1 || star.trailY < 1) {
-      shootingStars.splice(index, 1); // Remove when trail is too small
-    }
   });
 }
 
-// Add new shooting stars periodically
-setInterval(() => {
-  shootingStars.push({
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height / 2, // Start from the top half
-    speedX: Math.random() * 3 + 2,
-    speedY: Math.random() * 2 + 1,
-    trailX: Math.random() * 50 + 50,
-    trailY: Math.random() * 50 + 50,
-  });
-}, 10000);
+export function showStartScreen() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const startImage = new Image();
+  startImage.src = './images/startscreen.png';
+  startImage.onload = () => {
+    ctx.drawImage(startImage, 0, 0, canvas.width, canvas.height);
+    ctx.font = '30px Verdana';
+    ctx.fillStyle = 'yellow';
+    ctx.textAlign = 'center';
+    ctx.fillText('Press SPACE to Start', canvas.width / 2, canvas.height - 50);
+    playSound('background');
+  };
+}
 
 export function showGameOverScreen(score) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);

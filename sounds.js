@@ -9,6 +9,16 @@ const sounds = {
 // Enable looping for background music
 sounds.background.loop = true;
 
+export function stopSound(type) {
+  const sound = sounds[type];
+  if (sound) {
+    sound.pause();
+    sound.currentTime = 0;
+  } else {
+    console.error(`Sound "${type}" not found.`);
+  }
+}
+
 // Preload sounds on user interaction
 let soundsPreloaded = false;
 

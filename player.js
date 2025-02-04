@@ -1,6 +1,5 @@
 import { ctx } from './canvas.js';
 import { enemies } from './enemies.js';
-import { spaceStations } from './spaceStations.js';
 import { updateScore } from './gameLogic.js';
 import { createExplosion } from './explosions.js';
 import { playSound } from './sounds.js';
@@ -12,14 +11,16 @@ export let bullets = [];
 export const spacecraft = {
   x: window.innerWidth / 2,
   y: window.innerHeight - 150,
-  width: 65,
-  height: 65,
+  width: 100,
+  height: 100,
   speed: 10,
-  velocity: { x: 0, y: 0 }, // mooth movement
-  acceleration: 1.0, // smooth start
-  friction: 0.95, // gradual stop
+  velocity: { x: 0, y: 0 },
+  acceleration: 1.0,
+  friction: 0.95,
   maxSpeed: 15,
-  damage: 10,
+  health: 100,
+  maxBullets: 250,
+  currentBullets: 50,
   draw() {
     if (spacecraftImage.complete) {
       ctx.drawImage(
@@ -102,20 +103,29 @@ export function handlePlayerInput() {
 }
 
 export function fireBullet(spacecraft) {
-  bullets.push({
-    x: spacecraft.x,
-    y: spacecraft.y - spacecraft.height / 2,
-    width: 5,
-    height: 10,
-    speed: 5,
-  });
+  if (spacecraft.currentBullets > 0) {
+    bullets.push({
+      x: spacecraft.x,
+      y: spacecraft.y - spacecraft.height / 2,
+      width: 10,
+      height: 10,
+      velocity: 10,
+      destroyed: false
+    });
+    spacecraft.currentBullets--; // Decrease the bullet count
+    playSound('shoot');
+  } else {
+    console.log('No bullets left!');
+  }
 }
 
 export function updateBullets() {
   bullets.forEach((bullet) => {
-    bullet.y -= bullet.speed;
+    bullet.y -= bullet.velocity;
+  });
 
-    // Check for collisions with enemies
+  // Check for collisions with enemies
+  bullets.forEach((bullet) => {
     enemies.forEach((enemy) => {
       if (
         bullet.x < enemy.x + enemy.width &&
@@ -133,25 +143,6 @@ export function updateBullets() {
         updateScore(10);
       }
     });
-
-    // Check for collisions with space stations
-    spaceStations.forEach((spaceStation) => {
-      if (
-        bullet.x < spaceStation.x + spaceStation.width &&
-        bullet.x + bullet.width > spaceStation.x &&
-        bullet.y < spaceStation.y + spaceStation.height &&
-        bullet.y + bullet.height > spaceStation.y
-      ) {
-        //Create explosion and bullet destroyed
-        createExplosion(spaceStation.x + spaceStation.width / 2, spaceStation.y + spaceStation.height / 2);
-        playSound('explosion');
-        spaceStation.destroyed = true;
-        bullet.destroyed = true;
-
-        // Optionally, deduct points or take no action
-        updateScore(0);
-      }
-    });
   });
 
   // Remove destroyed bullets from the bullets array
@@ -164,26 +155,37 @@ export function updateBullets() {
 // Draw bullets
 export function drawBullets() {
   bullets.forEach((bullet) => {
-    // Gradient effect for bullets
-    const gradient = ctx.createLinearGradient(
-      bullet.x - bullet.width / 2,
-      bullet.y,
-      bullet.x + bullet.width / 2,
-      bullet.y + bullet.height
-    );
-    gradient.addColorStop(0, 'yellow');
-    gradient.addColorStop(1, 'red');
-    ctx.fillStyle = gradient;
+    if (isFinite(bullet.x) && isFinite(bullet.y)) {
+      // Gradient effect for bullets
+      const gradient = ctx.createRadialGradient(
+        bullet.x,
+        bullet.y,
+        bullet.width / 4,
+        bullet.x,
+        bullet.y,
+        bullet.width / 2
+      );
+      gradient.addColorStop(0, 'yellow');
+      gradient.addColorStop(1, 'red');
+      ctx.fillStyle = gradient;
 
-    // Draw the bullet
-    ctx.fillRect(bullet.x - bullet.width / 2, bullet.y, bullet.width, bullet.height);
+      // Draw the bullet as a circle with a glow effect
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = 'yellow';
+      ctx.beginPath();
+      ctx.arc(bullet.x, bullet.y, bullet.width / 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0; // Reset shadow
 
-    // Trail effect
-    ctx.globalAlpha = 0.5; // Semi-transparent trail
-    ctx.fillStyle = 'rgba(255, 255, 0, 0.5)';
-    ctx.beginPath();
-    ctx.arc(bullet.x, bullet.y + bullet.height, bullet.width / 2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalAlpha = 1.0; // Reset opacity
+      // Enhanced trail effect
+      ctx.globalAlpha = 0.5; // Semi-transparent trail
+      ctx.fillStyle = 'rgba(255, 255, 0, 0.5)';
+      ctx.beginPath();
+      ctx.arc(bullet.x, bullet.y + bullet.height, bullet.width / 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1.0; // Reset opacity
+    } else {
+      console.error('Invalid bullet coordinates:', bullet);
+    }
   });
 }

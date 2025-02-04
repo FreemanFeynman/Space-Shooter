@@ -1,16 +1,15 @@
 import { ctx, canvas } from './canvas.js';
 import { playSound } from './sounds.js';
+import { createExplosion } from './explosions.js';
+import { isGameEnded, updateGameLogic } from './gameLogic.js';
 
 export const items = [];
+const itemSpawnRate = 0.5;
 
 const itemTypes = [
   { type: 'health', image: './images/health.png' },
-  { type: 'shield', image: './images/shield.png' },
-  { type: 'weapon', image: './images/weapon.png' },
+  { type: 'ammo', image: './images/ammunition.png' },
 ];
-
-// Configurable spawn rate: 0.3 means a 30% chance to spawn an item.
-export let itemSpawnRate = 1.0;
 
 export function createItems(x, y) {
   const randomItem = itemTypes[Math.floor(Math.random() * itemTypes.length)];
@@ -18,8 +17,8 @@ export function createItems(x, y) {
     id: Math.random().toString(36).substring(2),
     x,
     y,
-    width: 60,
-    height: 60,
+    width: 50,
+    height: 50,
     velocity: 2,
     type: randomItem.type,
     image: new Image(),
@@ -34,18 +33,18 @@ export function spawnItem(x, y) {
   }
 }
 
-export function updateItems(player) {
+export function updateItems(spacecraft) {
   items.forEach((item, index) => {
     item.y += item.velocity;
 
     // Check collision with player.
     if (
-      item.x < player.x + player.width &&
-      item.x + item.width > player.x &&
-      item.y < player.y + player.height &&
-      item.y + item.height > player.y
+      item.x < spacecraft.x + spacecraft.width &&
+      item.x + item.width > spacecraft.x &&
+      item.y < spacecraft.y + spacecraft.height &&
+      item.y + item.height > spacecraft.y
     ) {
-      applyItemEffect(item.type, player);
+      itemEffect(item.type, spacecraft);
       playSound('pickup');
       items.splice(index, 1);
     }
@@ -55,6 +54,26 @@ export function updateItems(player) {
       items.splice(index, 1);
     }
   });
+
+    // Check if health is -1 and trigger explosion and game over
+    if (spacecraft.health <= -1 && !isGameEnded()) {
+      createExplosion(spacecraft.x, spacecraft.y);
+      playSound('explosion');
+      updateGameLogic();
+    }
+  }
+
+export function itemEffect(type, spacecraft) {
+  switch (type) {
+    case 'health':
+      spacecraft.health += 10;
+      console.log(`Health increased to: ${spacecraft.health}`);
+      break;
+    case 'ammo':
+      const ammoAmount = 100;
+      spacecraft.currentBullets = Math.min(spacecraft.currentBullets + ammoAmount, spacecraft.maxBullets);
+      break;
+    }
 }
 
 export function drawItems() {
@@ -66,14 +85,4 @@ export function drawItems() {
       ctx.fillRect(item.x, item.y, item.width, item.height);
     }
   });
-}
-
-function applyItemEffect(type, player) {
-  if (type === 'health') {
-    player.health = Math.min(player.health + 20, 100); // Heal player.
-  } else if (type === 'shield') {
-    player.shield = Math.min(player.shield + 15, 100); // Increase shield.
-  } else if (type === 'weapon') {
-    player.weaponPower += 1; // Upgrade weapon.
-  }
 }

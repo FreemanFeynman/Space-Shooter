@@ -4,17 +4,19 @@ import { playSound } from './sounds.js';
 
 export let enemyMissiles = [];
 
-// Enemy missiles
 export function fireMissile(enemy) {
   enemyMissiles.push({
-    x: enemy.x,
-    y: enemy.y,
-    width: 6,
-    height: 18,
+    id: Math.random().toString(36).substring(2),
+    x: enemy.x + enemy.width / 2,
+    y: enemy.y + enemy.height,
+    width: 10,
+    height: 30,
+    speed: 5,
     velocityX: 0,
     velocityY: 0,
-    speed: 3.5,
     firedAt: Date.now(),
+    destroyed: false,
+    image: new Image(),
   });
 }
 
@@ -52,7 +54,7 @@ export function updateMissiles(spacecraft) {
     ) {
       createExplosion(spacecraft.x, spacecraft.y);
       playSound('explosion'); // Play explosion sound on collision
-      spacecraft.damage--;
+      spacecraft.health -=10;
       missile.destroyed = true;
     }
   });
@@ -71,19 +73,27 @@ export function drawMissiles() {
       missile.x + missile.width,
       missile.y + missile.height
     );
-    gradient.addColorStop(0, 'white ');
+    gradient.addColorStop(0, 'purple');
     gradient.addColorStop(1, 'red');
     ctx.fillStyle = gradient;
 
-    // Draw the missile
-    ctx.fillRect(missile.x, missile.y, missile.width, missile.height);
+ // Draw the missile with a glow effect
+ ctx.shadowBlur = 10;
+ ctx.shadowColor = 'red';
+ ctx.beginPath();
+ ctx.moveTo(missile.x, missile.y);
+ ctx.lineTo(missile.x - missile.width / 2, missile.y + missile.height);
+ ctx.lineTo(missile.x + missile.width / 2, missile.y + missile.height);
+ ctx.closePath();
+ ctx.fill();
+ ctx.shadowBlur = 0; // Reset shadow
 
-    // Trail effect
-    ctx.globalAlpha = 0.4; // Semi-transparent trail
-    ctx.fillStyle = 'rgba(255, 0, 0, 0.4)';
-    ctx.beginPath();
-    ctx.arc(missile.x + missile.width / 2, missile.y + missile.height, missile.width / 2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalAlpha = 1.0; // Reset opacity
-  });
+ // Enhanced trail effect
+ ctx.globalAlpha = 0.5; // Semi-transparent trail
+ ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+ ctx.beginPath();
+ ctx.arc(missile.x, missile.y + missile.height, missile.width / 2, 0, Math.PI * 2);
+ ctx.fill();
+ ctx.globalAlpha = 1.0; // Reset opacity
+});
 }

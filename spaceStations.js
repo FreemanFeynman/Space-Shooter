@@ -1,5 +1,9 @@
 import { ctx, canvas } from './canvas.js';
 import { playSound } from './sounds.js';
+import { spawnItem } from './items.js';
+import { bullets } from './player.js';
+import { createExplosion } from './explosions.js';
+
 
 export const spaceStations = [];
 const collisionDamageEffect = 0;
@@ -15,15 +19,16 @@ export function createSpaceStation() {
     id: Math.random().toString(36).substring(2),
     x: Math.random() * canvas.width,
     y: -50,
-    width: 70,
-    height: 70,
+    width: 150,
+    height: 150,
     velocity: Math.random() * 2 + 1,
     image: spacestationImages[Math.floor(Math.random() * spacestationImages.length)],
-    destroyed: false
+    destroyed: false,
+    hitCount: 2 // Initialize with 2 hits required
   });
 }
 
-export function updateSpaceStations(player, bullets) {
+export function updateSpaceStations(player) {
   spaceStations.forEach((station) => {
     station.y += station.velocity;
 
@@ -51,27 +56,35 @@ export function updateSpaceStations(player, bullets) {
       playSound('collision');
     }
 
-    let destroyed = false;
-
-    // Check for bullet collision
-    bullets = bullets.filter((bullet) => {
+    // Collision with bullets
+    for (let j = bullets.length - 1; j >= 0; j--) {
+      let bullet = bullets[j];
       if (
         bullet.x < station.x + station.width &&
         bullet.x + bullet.width > station.x &&
         bullet.y < station.y + station.height &&
         bullet.y + bullet.height > station.y
       ) {
-        destroyed = true;
+        bullets.splice(j, 1); // Remove bullet
+        station.hitCount -= 1; // Decrement hit count
+        console.log(`Space station hit! Remaining hits: ${station.hitCount}`);
+        createExplosion(station.x + station.width / 2, station.y + station.height / 2);
         playSound('explosion');
-        return false; // Remove bullet
+        if (station.hitCount <= 0) {
+          station.destroyed = true; // Mark as destroyed if hit count is zero
+          spawnItem(station.x, station.y); // Spawn item when space station is destroyed
+        }
+        break; // Exit inner loop since bullet is processed
       }
-      return true; // Keep bullet
-    });
+    }
 
-
+    // Remove if off-screen
+    if (station.y > canvas.height) station.destroyed = true;
   });
-}
 
+  // Remove destroyed space stations
+  spaceStations.splice(0, spaceStations.length, ...spaceStations.filter((s) => !s.destroyed));
+}
 
 export function drawSpaceStations() {
   spaceStations.forEach((station) => {

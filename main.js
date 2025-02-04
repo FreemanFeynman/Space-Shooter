@@ -1,41 +1,32 @@
 import { ctx, canvas, setupCanvas } from './canvas.js';
-import { updateStars, drawStars, showGameOverScreen} from './environment.js';
-import { spacecraft, handlePlayerInput, fireBullet, drawBullets, updateBullets } from './player.js';
+import { updateStars, drawStars, showStartScreen, showGameOverScreen} from './environment.js';
+import { spacecraft, handlePlayerInput, fireBullet, drawBullets, updateBullets, bullets } from './player.js';
 import { updateMissiles, drawMissiles } from './projectiles.js';
 import { updateGameLogic, drawGameInfo, isGameEnded, getScore } from './gameLogic.js';
-import { playSound } from './sounds.js';
+import { playSound, stopSound } from './sounds.js';
 import { updateExplosions, drawExplosions } from './explosions.js';
 import { createEnemy, updateEnemies, drawEnemies, enemies } from './enemies.js';
 import { createSpaceStation, updateSpaceStations, drawSpaceStations } from './spaceStations.js';
+import { updateItems, drawItems } from './items.js';
 
 let gameStarted = false;
-let startImage = new Image();
-startImage.src = './images/startscreen.png';
 
 function initializeGame() {
   console.log('Initializing game...');
   setupCanvas();
+  showStartScreen();
   console.log('Game initialized successfully.');
-}
-
-// Function to display the start screen
-function showStartScreen() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(startImage, 0, 0, canvas.width, canvas.height);
-  ctx.font = '30px Arial';
-  ctx.fillStyle = 'yellow';
-  ctx.textAlign = 'center';
-  ctx.fillText('Press SPACE to Start', canvas.width / 2, canvas.height - 50);
 }
 
 window.addEventListener('keydown', (e) => {
   if (!gameStarted && e.key === ' ') {
     gameStarted = true;
+    stopSound('background');
 
     // Initialize game loop and obstacle/enemy creation
     gameLoop();
-    setInterval(createSpaceStation, 8000); // Spawn obstacles every x seconds
-    setInterval(createEnemy, 10000);   // Spawn enemies every x seconds
+    setInterval(createSpaceStation, 3000); // Spawn obstacles every x seconds
+    setInterval(() => createEnemy(2), 6000);   // Spawn enemies every x seconds
   } else if (gameStarted && e.key === ' ' && spacecraft) {
     fireBullet(spacecraft);
     playSound('shoot');
@@ -46,6 +37,10 @@ function gameLoop() {
   if (!gameStarted) return; // Prevent the game loop from running before the game starts
 
   try {
+
+    //Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
     // Update game elements
     handlePlayerInput();
     updateStars();
@@ -53,10 +48,9 @@ function gameLoop() {
     updateMissiles(spacecraft, enemies);
     updateExplosions();
     updateEnemies(spacecraft);
-    updateSpaceStations(spacecraft, enemies);
+    updateItems (spacecraft);
+    updateSpaceStations(spacecraft, enemies, bullets);
     updateGameLogic();
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     drawStars();
     spacecraft.draw();
@@ -64,6 +58,7 @@ function gameLoop() {
     drawMissiles();
     drawExplosions();
     drawEnemies();
+    drawItems();
     drawSpaceStations();
     drawGameInfo();
 
@@ -81,4 +76,3 @@ function gameLoop() {
 
 // Initializing the start screen
 initializeGame();
-startImage.onload = () => showStartScreen(); // Show the start screen when the image is loaded
