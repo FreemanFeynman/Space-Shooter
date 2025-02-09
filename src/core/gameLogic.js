@@ -5,47 +5,47 @@ import { playSound } from '../utils/sounds.js';
 
 let score = 0;
 let isGameOver = false;
+let level1 = false;
 
-export function updateGameLogic(gameLoop) {
+export function updateGameLogic() {
   score = enemyBulletCount + enemyCollisionCount + enemySpaceStationCount;
-
 
   if (spacecraft.health <= -1) {
     isGameOver = true;
-    console.log("Game Over: Player has no health left!");
+    console.log("Game Over: Player has no health left.");
   }
 
   enemies.forEach((enemy) => {
     if (enemy.y > canvas.height) {
       isGameOver = true;
-      console.log("Game Over: Enemy went off-screen!");
+      console.log("Game Over: Enemy went off-screen.");
     }
   });
 
   if (score > 49) {
-    level1Complete(gameLoop);
-    return;
+    level1 = true;
+    console.log("Level 1 Complete: Player has destroyed 50 enemies.");
   }
 }
 
 export function drawGameInfo() {
-  ctx.fillStyle = 'Yellow';
+  ctx.fillStyle = 'yellow';
   ctx.font = '20px Verdana';
-  ctx.fillText(`Enemies destroyed: ${Math.floor(score)}`, 125, 50);
+  ctx.fillText(`Enemy count: ${Math.floor(score)}`, 100, 50);
 
   if (spacecraft.health <= 5) {
     ctx.fillStyle = 'red';
   } else {
-    ctx.fillStyle = 'Yellow';
+    ctx.fillStyle = 'yellow';
   }
-  ctx.fillText(`Health: ${spacecraft.health || 0}`, 75, 140);
+  ctx.fillText(`Energy: ${spacecraft.health || 0}`, 75, 110);
 
   if (spacecraft.currentBullets <= 10) {
     ctx.fillStyle = 'red';
   } else {
-    ctx.fillStyle = 'Yellow';
+    ctx.fillStyle = 'yellow';
   }
-  ctx.fillText(`Bullets: ${spacecraft.currentBullets || 0}`, 70, 110);
+  ctx.fillText(`Weapon: ${spacecraft.currentBullets || 0}`, 80, 80);
 }
 
 export function showStartScreen() {
@@ -62,7 +62,7 @@ export function showStartScreen() {
   };
 }
 
-export function level1Complete() {
+export function level1Screen() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const level1Image = new Image();
   level1Image.src = '../assets/images/level1complete.png';
@@ -77,10 +77,8 @@ export function level1Complete() {
     ctx.fillStyle = 'yellow';
     ctx.font = '24px Verdana';
     ctx.fillText(`Enemies destroyed: ${Math.floor(score)}`, 170, 70);
+    playSound('background');
   };
-  
-  // Stop the game loop
-  // cancelAnimationFrame(gameLoop);
 }
 
 export function showGameOverScreen(score) {
@@ -92,10 +90,11 @@ export function showGameOverScreen(score) {
   ctx.textAlign = "center";
   ctx.fillText("Game Over", canvas.width / 2, canvas.height / 2 - 50);
   ctx.font = "24px Comic Sans MS";
-  ctx.fillText(`Enemies destroyed: ${Math.floor(score)}`, canvas.width / 2, canvas.height / 2);
+  ctx.fillText(`Enemy count: ${Math.floor(score)}`, canvas.width / 2, canvas.height / 2);
   ctx.fillStyle = "darkred";
   ctx.font = "60px Comic Sans MS";
   ctx.fillText("They have breached Earth's defence...", canvas.width / 2, canvas.height / 2 - 150);
+  playSound('gameover');
 
   // Draw Try Again Button
   const buttonX = canvas.width / 2 - 75;
@@ -130,6 +129,10 @@ export function showGameOverScreen(score) {
 function restartGame() {
   // Reload the page to restart the game
   window.location.reload();
+}
+
+export function Level1Ended() {
+  return level1;
 }
 
 export function isGameEnded() {

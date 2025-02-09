@@ -2,12 +2,13 @@ import { ctx, canvas, setupCanvas } from './canvas.js';
 import { updateStars, drawStars} from '../entities/environment.js';
 import { spacecraft, handlePlayerInput, fireBullet, drawBullets, updateBullets, bullets } from '../entities/player.js';
 import { updateMissiles, drawMissiles } from '../entities/projectiles.js';
-import { updateGameLogic, drawGameInfo, isGameEnded, getScore, showStartScreen, showGameOverScreen, level1Complete } from './gameLogic.js';
+import { updateGameLogic, drawGameInfo, isGameEnded, getScore, showStartScreen, Level1Ended, showGameOverScreen, level1Screen } from './gameLogic.js';
 import { playSound, stopSound } from '../utils/sounds.js';
 import { updateExplosions, drawExplosions } from '../entities/explosions.js';
 import { createEnemy, updateEnemies, drawEnemies, enemies } from '../entities/enemies.js';
 import { createSpaceStation, updateSpaceStations, drawSpaceStations } from '../entities/spaceStations.js';
 import { updateItems, drawItems } from '../entities/items.js';
+import {createNemesis, updateNemesis, drawNemesis} from '../entities/nemesis.js'
 
 let gameStarted = false;
 
@@ -25,8 +26,10 @@ window.addEventListener('keydown', (e) => {
 
     // Initialize game loop and obstacle/enemy creation
     gameLoop();
-    setInterval(createSpaceStation, 20000); // Spawn obstacles every x seconds
+    playSound('gamebackground');
+    setInterval(() => createSpaceStation(6), 20000); // Spawn obstacles every x seconds
     setInterval(() => createEnemy(2), 6000);   // Spawn enemies every x seconds
+    setInterval(() => createNemesis(1), 1000); // Spawn nemesis every x seconds
   } else if (gameStarted && e.key === ' ' && spacecraft) {
     fireBullet(spacecraft);
     playSound('shoot');
@@ -50,6 +53,7 @@ function gameLoop() {
     updateEnemies(spacecraft);
     updateItems (spacecraft);
     updateSpaceStations(spacecraft, enemies, bullets);
+    updateNemesis();
     updateGameLogic(gameLoop);
 
     drawStars();
@@ -58,13 +62,19 @@ function gameLoop() {
     drawMissiles();
     drawExplosions();
     drawEnemies();
+    drawNemesis(spacecraft);
     drawItems();
     drawSpaceStations();
     drawGameInfo();
 
-    if (!isGameEnded()) {
+    if (Level1Ended()) {
+      //playSound('background');
+      stopSound('gamebackground');
+      level1Screen();
+      playSound('background');
+    } else if (!isGameEnded()) {
       requestAnimationFrame(gameLoop);
-    } else {
+    } else {  
       playSound('explosion');
       showGameOverScreen(getScore());
     }
@@ -72,7 +82,6 @@ function gameLoop() {
     console.error('Error in gameLoop:', error);
   }
 }
-
 
 // Initializing the start screen
 initializeGame();

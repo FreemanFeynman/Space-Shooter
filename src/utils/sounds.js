@@ -4,6 +4,8 @@ const sounds = {
   item: new Audio('../assets/sounds/item.mp3'),
   background: new Audio('../assets/sounds/background.mp3'),
   collision: new Audio('../assets/sounds/collision.wav'),
+  gamebackground: new Audio('../assets/sounds/inGameBackground.mp3'),
+  gameover: new Audio('../assets/sounds/gameover.wav'),
 };
 
 // Enable looping for background music

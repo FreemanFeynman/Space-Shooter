@@ -7,7 +7,7 @@ export const items = [];
 const itemSpawnRate = 0.5;
 
 const itemTypes = [
-  { type: 'health', image: '../assets/images/health.png' },
+  { type: 'health', image: '../assets/images/energy.png' },
   { type: 'ammo', image: '../assets/images/ammunition.png' },
   { type: 'shield', image: '../assets/images/shield.png' },
 ];
@@ -39,11 +39,13 @@ export function updateItems(spacecraft) {
     item.y += item.velocity;
 
     // Check collision with player.
+    let margin = 10;  // Increase this value to make the hit area larger
+
     if (
-      item.x < spacecraft.x + spacecraft.width &&
-      item.x + item.width > spacecraft.x &&
-      item.y < spacecraft.y + spacecraft.height &&
-      item.y + item.height > spacecraft.y
+      item.x < spacecraft.x + spacecraft.width + margin &&
+      item.x + item.width > spacecraft.x - margin &&
+      item.y < spacecraft.y + spacecraft.height + margin &&
+      item.y + item.height > spacecraft.y - margin
     ) {
       itemEffect(item.type, spacecraft);
       playSound('item');
@@ -74,7 +76,6 @@ export function itemEffect(type, spacecraft) {
       const ammoAmount = 20;
       spacecraft.currentBullets = Math.min(spacecraft.currentBullets + ammoAmount, spacecraft.maxBullets);
       break;
-    case 'shield':
     }
 }
 

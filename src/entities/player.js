@@ -21,9 +21,9 @@ export const spacecraft = {
   acceleration: 1.1,
   friction: 0.95,
   maxSpeed: 25,
-  health: 100,
+  health: 150,
   maxBullets: 250,
-  currentBullets: 20,
+  currentBullets: 50,
   draw() {
     if (spacecraftImage.complete) {
       ctx.drawImage(
@@ -167,8 +167,9 @@ export function updateBullets() {
     });
   });
 
-  bullets.splice(0, bullets.length, ...bullets.filter((bullet) => !bullet.destroyed));
-  enemies.splice(0, enemies.length, ...enemies.filter((enemy) => !enemy.destroyed));
+  bullets.splice(0, bullets.length, ...bullets.filter(bullet => !bullet.destroyed));
+  enemies.splice(0, enemies.length, ...enemies.filter(enemy => !enemy.destroyed));
+  //console.log(`Active Bullets: ${bullets.length}, Active Enemies: ${enemies.length}`);
 }
 
 // Draw bullets
