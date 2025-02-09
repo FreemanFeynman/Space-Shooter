@@ -56,13 +56,14 @@ export function updateEnemies(player) {
     }
 
     handleEnemyShooting(enemy);
+    let margin = 10; // Increase this value to make the hit area larger
 
     // Collision with player
     if (
-      enemy.x < player.x + player.width &&
-      enemy.x + enemy.width > player.x &&
-      enemy.y < player.y + player.height &&
-      enemy.y + enemy.height > player.y
+      enemy.x < player.x + player.width + margin &&
+      enemy.x + enemy.width > player.x - margin &&
+      enemy.y < player.y + player.height + margin &&
+      enemy.y + enemy.height > player.y - margin
     ) {
       createExplosion(player.x, player.y);
       playSound('explosion');
